@@ -10,6 +10,8 @@ dialogs:
     header: Edit contact card
   addIssue:
     header: Add issue
+  editIssue:
+    header: Edit issue
   addIssueProgress:
     header: Add issue progress
   addIssueContact:
@@ -27,3 +29,6 @@ dialogs:
     confirm: "Do You really want to remove these files?"
   editTravelIdea:
     header: Edit travel idea
+  uploadModuleSettings:
+    moveFolder:
+      header: Move folder

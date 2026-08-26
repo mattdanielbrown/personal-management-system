@@ -99,6 +99,11 @@ class IllnessAction extends AbstractController
     public function remove(Illness $illness): JsonResponse
     {
         $illness->setDeleted(true);
+        foreach ($illness->getAppointments() as $appointment) {
+            $appointment->setDeleted(true);
+            $this->em->persist($appointment);
+        }
+
         $this->em->persist($illness);
         $this->em->flush();
 

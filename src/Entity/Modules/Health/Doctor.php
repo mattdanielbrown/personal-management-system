@@ -49,6 +49,11 @@ class Doctor implements EntityInterface, SoftDeletableEntityInterface
     private string $address;
 
     /**
+     * @ORM\Column(type="json")
+     */
+    private array $contacts = [];
+
+    /**
      * @ORM\Column(type="text", nullable=true)
      */
     private ?string $information = null;
@@ -107,4 +112,15 @@ class Doctor implements EntityInterface, SoftDeletableEntityInterface
     {
         $this->information = $information;
     }
+
+    public function getContacts(): array
+    {
+        return $this->contacts;
+    }
+
+    public function setContacts(array $contacts): void
+    {
+        $this->contacts = $contacts;
+    }
+
 }

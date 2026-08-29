@@ -54,6 +54,7 @@ class DoctorAction extends AbstractController
             'information'    => $doctor->getInformation(),
             'name'           => $doctor->getName(),
             'specialisation' => $doctor->getSpecialisation(),
+            'contacts'       => $doctor->getContacts(),
         ], $doctors);
 
         $response = BaseResponse::buildOkResponse();

@@ -5,6 +5,7 @@ namespace App\Response\Base;
 
 use App\Listeners\Response\JwtTokenResponseListener;
 use App\Services\TypeProcessor\ArrayHandler;
+use App\Traits\SerializerAwareTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -18,6 +19,8 @@ use Symfony\Component\Serializer\Serializer;
  */
 class BaseResponse
 {
+    use SerializerAwareTrait;
+
     const KEY_FQN     = "fqn";
     const KEY_CODE    = "code";
     const KEY_MESSAGE = "message";
@@ -424,16 +427,7 @@ class BaseResponse
      */
     public function toJsonResponse(int $responseCode = Response::HTTP_OK): JsonResponse
     {
-        $serializer = new Serializer([
-            new ObjectNormalizer(),
-        ], [
-            new JsonEncoder()
-        ]);
-
-        $json  = $serializer->serialize($this, "json", [
-            AbstractNormalizer::CIRCULAR_REFERENCE_LIMIT => 10,
-        ]);
-
+        $json = $this->serialize($this);
         $array = json_decode($json, true);
 
         return new JsonResponse($array, $responseCode);

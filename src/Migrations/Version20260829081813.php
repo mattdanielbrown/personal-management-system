@@ -19,7 +19,7 @@ final class Version20260829081813 extends AbstractMigration
 
     public function up(Schema $schema) : void
     {
-        $this->addSql('ALTER TABLE doctor ADD contacts JSON NOT NULL AFTER information');
+        $this->addSql('ALTER TABLE doctor ADD contacts JSON DEFAULT "[]" NOT NULL AFTER information');
     }
 
     public function down(Schema $schema) : void

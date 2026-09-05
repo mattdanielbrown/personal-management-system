@@ -3,26 +3,31 @@
 namespace App\Action\Modules\Health;
 
 use App\Attribute\ModuleAttribute;
+use App\DTO\Modules\Health\DoctorContactDto;
 use App\Entity\Modules\Health\Doctor;
 use App\Exception\MissingDataException;
 use App\Response\Base\BaseResponse;
 use App\Services\Module\ModulesService;
 use App\Services\RequestService;
 use App\Services\TypeProcessor\ArrayHandler;
+use App\Traits\SerializerAwareTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route("/module/health/doctor", name: "module.health.doctor.")]
 #[ModuleAttribute(values: ["name" => ModulesService::MODULE_NAME_HEALTH])]
 class DoctorAction extends AbstractController
 {
+    use SerializerAwareTrait;
 
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -35,8 +40,7 @@ class DoctorAction extends AbstractController
     #[Route("", name: "new", methods: [Request::METHOD_POST])]
     public function new(Request $request): JsonResponse
     {
-        $this->createOrUpdate($request);
-        return BaseResponse::buildOkResponse()->toJsonResponse();
+        return $this->createOrUpdate($request);
     }
 
     /**
@@ -73,8 +77,7 @@ class DoctorAction extends AbstractController
     #[Route("/{id}", name: "update", methods: [Request::METHOD_PATCH])]
     public function update(Doctor $doctor, Request $request): JsonResponse
     {
-        $this->createOrUpdate($request, $doctor);
-        return BaseResponse::buildOkResponse()->toJsonResponse();
+        return $this->createOrUpdate($request, $doctor);
     }
 
     /**
@@ -98,9 +101,10 @@ class DoctorAction extends AbstractController
      * @param Request     $request
      * @param Doctor|null $doctor
      *
+     * @return JsonResponse
      * @throws MissingDataException
      */
-    private function createOrUpdate(Request $request, ?Doctor $doctor = null): void
+    private function createOrUpdate(Request $request, ?Doctor $doctor = null): JsonResponse
     {
         if (!$doctor) {
             $doctor = new Doctor();
@@ -111,14 +115,27 @@ class DoctorAction extends AbstractController
         $information    = ArrayHandler::get($dataArray, 'information', allowEmpty: false);
         $address        = ArrayHandler::get($dataArray, 'address', allowEmpty: false);
         $specialisation = ArrayHandler::get($dataArray, 'specialisation', allowEmpty: false);
+        $contacts       = ArrayHandler::get($dataArray, 'contacts', allowEmpty: false);
+
+        foreach ($contacts as $contact) {
+            /** @var DoctorContactDto $contactDto */
+            $contactDto = $this->deserialize($contact, DoctorContactDto::class);
+            if (empty($contactDto->getName()) || empty($contactDto->getValue())) {
+                $msg = $this->translator->trans('module.doctor.contacts.message.emptyData');
+                return BaseResponse::buildBadRequestErrorResponse($msg)->toJsonResponse();
+            }
+        }
 
         $doctor->setName($name);
         $doctor->setInformation($information);
         $doctor->setAddress($address);
         $doctor->setSpecialisation($specialisation);
+        $doctor->setContacts($contacts);
 
         $this->em->persist($doctor);
         $this->em->flush();
+
+        return BaseResponse::buildOkResponse()->toJsonResponse();
     }
 
 }

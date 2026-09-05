@@ -3,3 +3,7 @@ module:
     files:
       message:
         filesSaveSuccess: "Files have been saved"
+  doctor:
+    contacts:
+      message:
+        emptyData: "Some of the contact data is empty!"
